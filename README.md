@@ -36,21 +36,21 @@ Both directories need to be created manually at the moment.
 
 ### ad 3.  
 To run mfr_findModel.py, two input parameters need to be specified:  
-
-The first one is the pickle-file with the train and test data:  
+<ul>
+<li> The first one is the pickle-file with the train and test data:  
 print('Read in test and train data from:', argv[0])  
-The second on is the pickle-file, to which the selected final model will be saved to:  
+<li> The second on is the pickle-file, to which the selected final model will be saved to:  
 print('Save final model to:', argv[1])  
-
+</ul>
 Both files need again the subdirectory mfr_predict.  
 
 ### ad 4.  
 To run mfr_prediction.py, five input parameters need to be specified:  
-
-First, again the pickle-file with train and test data.  
-Second, the pickle-file with the final model.   
-Third, file name where plots from analysis of WIND data will be saved to (png).  
-Fourth, file name where plots from analysis of STA data will be saved to (png).  
-Fifth, file name where plots from analysis of STB data will be saved to (png).  
-
+<ul>
+<li> First, again the pickle-file with train and test data.  
+<li> Second, the pickle-file with the final model.   
+<li> Third, file name where plots from analysis of WIND data will be saved to (png).  
+<li> Fourth, file name where plots from analysis of STA data will be saved to (png).  
+<li> Fifth, file name where plots from analysis of STB data will be saved to (png).  
+</ul>
 Both subdirectories, mfr_prdict and plots, are needed here.  
