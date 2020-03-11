@@ -7,12 +7,12 @@ If you clone the repository, it still won't work as it is, since there are a cou
 ## Brief instruction for running the scripts  
 
 Please run the scripts in the following order:  
-< ol >
-  mfr_prepData.py
-  mfr_featureSelection.py
-  mfr_findModel.py
-  mfr_prediction.py 
-< li >
+<ol>
+  <li> mfr_prepData.py <\li>
+  <li> mfr_featureSelection.py <\li>
+  <li> mfr_findModel.py <\li>
+  <li> mfr_prediction.py <\li>
+<\ol>
 
 ### ad 2.  
 To run mfr_featureSelection.py, the following input parameters need to be specified:  
