@@ -1,1 +1,1 @@
-feature_hours=5
+feature_hours=10

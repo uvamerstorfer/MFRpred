@@ -117,31 +117,31 @@ def evaluate_forecast(model, X, y, y_predict):
 
 # get ICME times
 print('get ICME times')
-[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("../catpy/DATACAT/icme_times.p", "rb"))
+[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("data/icme_times.p", "rb"))
 print('get ICME times done')
 
 # ############################# get Wind data ################################
 
 print('read Wind data')
 # get insitu date
-win = pickle.load(open("../catpy/DATACAT/WIND_2007to2018_HEEQ.p", "rb"))
-[win_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_win_2007_2018.p", "rb"))
+win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
+[win_time] = pickle.load(open("data/insitu_times_mdates_win_2007_2018.p", "rb"))
 print('read data done')
 
 # ############################# get Stereo-A data ################################
 
 print('read Stereo-A data')
 # get insitu data
-sta = pickle.load(open("../catpy/DATACAT/STA_2007to2015_SCEQ.p", "rb"))
-[sta_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_sta_2007_2015.p", "rb"))
+sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
+[sta_time] = pickle.load(open("data/insitu_times_mdates_sta_2007_2015.p", "rb"))
 print('read data done')
 
 # ############################# get Stereo-B data ################################
 
 print('read Stereo-B data')
 # get insitu data
-stb = pickle.load(open("../catpy/DATACAT/STB_2007to2014_SCEQ.p", "rb"))
-[stb_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_stb_2007_2014.p", "rb"))
+stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
+[stb_time] = pickle.load(open("data/insitu_times_mdates_stb_2007_2014.p", "rb"))
 print('read data done')
 
 #############################################################################
