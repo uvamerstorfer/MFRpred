@@ -193,7 +193,7 @@ print('save MFR duration done')
 print('save ICME times')
 # save ICME times and indices of spacecraft events
 pickle.dump([icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind], open("data/icme_times.p", "wb"))
-pickle.dump([icme_start_time, icme_end_time, mo_start_time, mo_end_time], open("data/data_icme_times_string.p", "wb"))
+pickle.dump([icme_start_time, icme_end_time, mo_start_time, mo_end_time], open("data/icme_times_string.p", "wb"))
 print('save ICME times done')
 
 # ############################# save spacecraft data ################################

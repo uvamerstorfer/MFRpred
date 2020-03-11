@@ -84,20 +84,20 @@ print('')
 print("Accuracy: %0.2f (+/- %0.2f)" % (rmse_scores.mean(), rmse_scores.std() * 2))
 
 ################################ load WIND times #############################
-win = pickle.load(open("../catpy/DATACAT/WIND_2007to2018_HEEQ.p", "rb"))
-[win_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_win_2007_2018.p", "rb"))
+win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
+[win_time] = pickle.load(open("data/insitu_times_mdates_win_2007_2018.p", "rb"))
 
 ################################ load STEREO-A times #############################
-sta = pickle.load(open("../catpy/DATACAT/STA_2007to2015_SCEQ.p", "rb"))
-[sta_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_sta_2007_2015.p", "rb"))
+sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
+[sta_time] = pickle.load(open("data/insitu_times_mdates_sta_2007_2015.p", "rb"))
 
 ################################ load STEREO-B times #############################
-stb = pickle.load(open("../catpy/DATACAT/STB_2007to2014_SCEQ.p", "rb"))
-[stb_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_stb_2007_2014.p", "rb"))
+stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
+[stb_time] = pickle.load(open("data/insitu_times_mdates_stb_2007_2014.p", "rb"))
 
 ################################ load ICME times #############################
-[icme_start_time, icme_end_time, mo_start_time, mo_end_time] = pickle.load(open("../catpy/DATACAT/icme_times_string.p", "rb"))
-[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("../catpy/DATACAT/icme_times.p", "rb"))
+[icme_start_time, icme_end_time, mo_start_time, mo_end_time] = pickle.load(open("data/icme_times_string.p", "rb"))
+[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("data/icme_times.p", "rb"))
 
 # ############################### PLOTS #############################
 # WIND
