@@ -17,11 +17,12 @@ Please run the scripts in the following order:
 ### ad 2.  
 To run mfr_featureSelection.py, the following input parameters need to be specified:  
   
-The first three arguments need to be file names to save features into (at first run of the script) or from which the features are read in (subsequent runs of the script - see below at --features)  
-WIND features: argv[0]  
-STA features: argv[1]  
-STB features: argv[2]  
-
+The first three arguments need to be file names to save features into (at first run of the script) or from which the features are read in (subsequent runs of the script - see below at --features):
+<ul>
+<li> WIND features: argv[0]  
+<li> STA features: argv[1]  
+<li> STB features: argv[2]  
+</ul>
 Then --features can be given as parameter, if features need to be determined. If --features is set, then the code will produce a pickle-file with the features and the label. If --features is not set, then the code will read from an already existing pickle-file (in other words, if you already calculated the features, you don't need to do this step again when running the script again). 
 
 The last input parameter can be--mfr. We try out different features from different regions of the MFR - only sheath features, sheath and MFR features, only MFR features. For the third case, you need to give --mfr. 
