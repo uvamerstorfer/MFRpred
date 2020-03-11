@@ -6,6 +6,8 @@ If you clone the repository, it should work as it is. Important is the file and 
 # (1) Machine learning 
 Brief instruction for running the scripts 
 
+Please run the scripts in the following order:
+
 1. mfr_prepData.py
 2. mfr_featureSelection.py
 3. mfr_findModel.py
