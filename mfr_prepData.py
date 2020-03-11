@@ -205,7 +205,7 @@ print('save ICME times done')
 print('save Wind data')
 # save insitu data
 win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
-win_time = parse_time(win.time,format='utime').datetime
+win_time = parse_time(win.time,format='utime').plot_date
 pickle.dump([win_time], open("data/insitu_times_mdates_win_2007_2018.p", "wb"))
 print('save data done')
 
@@ -214,7 +214,7 @@ print('save data done')
 print('save Stereo-A data')
 # save insitu data
 sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
-sta_time = parse_time(sta.time,format='utime').datetime
+sta_time = parse_time(sta.time,format='utime').plot_date
 pickle.dump([sta_time], open("data/insitu_times_mdates_sta_2007_2015.p", "wb"))
 print('save data done')
 
@@ -223,6 +223,6 @@ print('save data done')
 print('save Stereo-B data')
 # save insitu data
 stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
-stb_time = parse_time(stb.time,format='utime').datetime
+stb_time = parse_time(stb.time,format='utime').plot_date
 pickle.dump([stb_time], open("data/insitu_times_mdates_stb_2007_2014.p", "wb"))
 print('save data done')

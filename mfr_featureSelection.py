@@ -52,6 +52,23 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
+
+
+
+#get all variables from the input.py file:
+
+from input import *
+
+#make new directory if it not exists
+mfrdir='mfr_predict'
+if os.path.isdir(mfrdir) == False: os.mkdir(mfrdir)
+
+plotdir='plots'
+if os.path.isdir(plotdir) == False: os.mkdir(plotdir)
+
+
+
+
 # sns.set_context("talk")
 # sns.set_style("darkgrid")
 sns.set_context("notebook", font_scale=0.4, rc={"lines.linewidth": 2.5})
@@ -171,31 +188,31 @@ def get_label(sc_time, start_time, end_time, sc_ind, sc_label, feature_hours, *V
 
 # get ICME times
 print('get ICME times')
-[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("../catpy/DATACAT/icme_times.p", "rb"))
+[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("data/icme_times.p", "rb"))
 print('get ICME times done')
 
 # ############################# get Wind data ################################
 
 print('read Wind data')
 # get insitu date
-win = pickle.load(open("../catpy/DATACAT/WIND_2007to2018_HEEQ.p", "rb"))
-[win_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_win_2007_2018.p", "rb"))
+win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
+[win_time] = pickle.load(open("data/insitu_times_mdates_win_2007_2018.p", "rb"))
 print('read data done')
 
 # ############################# get Stereo-A data ################################
 
 print('read Stereo-A data')
 # get insitu data
-sta = pickle.load(open("../catpy/DATACAT/STA_2007to2015_SCEQ.p", "rb"))
-[sta_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_sta_2007_2015.p", "rb"))
+sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
+[sta_time] = pickle.load(open("data/insitu_times_mdates_sta_2007_2015.p", "rb"))
 print('read data done')
 
 # ############################# get Stereo-B data ################################
 
 print('read Stereo-B data')
 # get insitu data
-stb = pickle.load(open("../catpy/DATACAT/STB_2007to2014_SCEQ.p", "rb"))
-[stb_time] = pickle.load(open("../catpy/DATACAT/insitu_times_mdates_stb_2007_2014.p", "rb"))
+stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
+[stb_time] = pickle.load(open("data/insitu_times_mdates_stb_2007_2014.p", "rb"))
 print('read data done')
 
 #############################################################################
@@ -217,7 +234,7 @@ print('read data done')
 
 # use some hours of MFR for feature
 # only sheath for features: feature_hours = 0
-feature_hours = 0
+
 
 # only take events where there is a sheath, so where the start of the ICME is NOT equal to the start of the flux rope
 n_iwinind = np.where(icme_start_time_num[iwinind] != mo_start_time_num[iwinind])[0]

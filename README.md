@@ -57,33 +57,49 @@ and place them in the data/ folder.
 
 Please run the scripts in the following order, make sure you have the conda helio environment activated:
 
-    python mfr_prepData.py
-    python mfr_featureSelection.py 
-    python mfr_findModel.py 
-    python mfr_prediction.py 
+    mfr_prepData.py
+    mfr_featureSelection.py 
+    mfr_findModel.py 
+    mfr_prediction.py 
 
+
+#### mfr_prepData.py
+
+Start with 
+
+    python mfr_prepData.py
+    
+to prepare the data.
 
 #### mfr_featureSelection.py
-To run mfr_featureSelection.py, the following input parameters need to be specified:  
-  
-The first three arguments need to be file names to save features into (at first run of the script) or from which the features are read in (subsequent runs of the script - see below at --features):
-<ul>
-<li> WIND features: argv[0]  
-<li> STA features: argv[1]  
-<li> STB features: argv[2]  
-</ul>
-Then --features can be given as parameter, if features need to be determined. If --features is set, then the code will produce a pickle-file with the features and the label. If --features is not set, then the code will read from an already existing pickle-file (in other words, if you already calculated the features, you don't need to do this step again when running the script again). 
 
-The last input parameter can be--mfr. We try out different features from different regions of the MFR - only sheath features, sheath and MFR features, only MFR features. For the third case, you need to give --mfr. 
+Continue with
 
-If you want to use MFR features, you also have to specify a certain parameter INSIDE the script (that's not optimal so far and surely will be changed in the future) - namely feature_hours. This parameter so-to-speak specifies how much of the MFR is taken for the feature (e.g. feature_hours=0 means only the sheath and no part of the MFR is taken, feature_hours=1 means the first hour of the MFR is taken, etc.).
+    python mfr_featureselection.py wind_features.p sta_features.p stb_features.p --features
+ 
+The first three arguments need to be file names ending in .p (for python pickle) into which the features are saved (at first run of the script) 
+or from which the features are read in (see below), e.g. for Wind its wind_features.p, for STEREO-A sta_features.p, and for STEREO-B stb_features.p, in exactly that order.
 
-The features are saved in pickle-files in a subdirectory mfr_predict.  
-The train and test data sets are also saved in this subdirectory.  
-The corresponding plots are saved in a subdirectory plots.   
-Both directories need to be created manually at the moment.  
 
-### mfr_findModel.py
+**--features**: set this if features need to be determined. If set, the code will produce a pickle-file with the features and the labels. 
+If --features is not set, then they will be read them from an already existing pickle-file. 
+
+**--mfr**: We try out different features from different regions of the MFR - 
+only sheath features, sheath and MFR features, only MFR features. For the third case, you need to set --mfr. 
+If you want to use MFR features, you also have to specify the variabel *feature_hours* in the file *input.py*. 
+This parameter how much time of the MFR is taken for the feature; e.g. feature_hours=0 means only the sheath 
+and no part of the MFR is taken, feature_hours=5 means the first five hours of the MFR are taken.
+
+The features,train and test data sets are saved in pickle-files in a subdirectory 
+
+    mfr_predict/
+    
+The corresponding plots are saved in a subdirectory 
+
+    plots/
+
+
+#### mfr_findModel.py
 To run mfr_findModel.py, two input parameters need to be specified:  
 <ul>
 <li> The first one is the pickle-file with the train and test data:  
@@ -94,7 +110,7 @@ print('Save final model to:', argv[1])
 
 Both files need again the subdirectory mfr_predict.  
 
-### mfr_prediction.py
+#### mfr_prediction.py
 To run mfr_prediction.py, five input parameters need to be specified:  
 <ul>
 <li> First, again the pickle-file with train and test data.  
