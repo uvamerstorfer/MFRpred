@@ -42,6 +42,7 @@ print('Read in test and train data from:', argv[0])
 <li> The second on is the pickle-file, to which the selected final model will be saved to:  
 print('Save final model to:', argv[1])  
 </ul>
+
 Both files need again the subdirectory mfr_predict.  
 
 ### ad 4.  
@@ -53,4 +54,5 @@ To run mfr_prediction.py, five input parameters need to be specified:
 <li> Fourth, file name where plots from analysis of STA data will be saved to (png).  
 <li> Fifth, file name where plots from analysis of STB data will be saved to (png).  
 </ul>
+
 Both subdirectories, mfr_prdict and plots, are needed here.  
