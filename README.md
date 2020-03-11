@@ -4,16 +4,17 @@ Trying to predict the magnetic field of the magnetic flux rope (MFR) within an I
 If you clone the repository, it still won't work as it is, since there are a couple of pickle-files missing - unfortunately, they are too large to bit put on git (STA_2007to2015_SCEQ.p, STB_2007to2014_SCEQ.p, WIND_2007to2018_HEEQ.p). The missing pickle files are in a directory one level above the main scripts directory (../catpy/DATACAT/). The file and directory structure is important, since this structure is implemented in a static way, with paths directly coded in the Python scripts. 
   
 # (1) Machine learning  
-Brief instruction for running the scripts  
+## Brief instruction for running the scripts  
 
 Please run the scripts in the following order:  
-  
-1. mfr_prepData.py  
-2. mfr_featureSelection.py  
-3. mfr_findModel.py  
-4. mfr_prediction.py  
+<ol>
+  mfr_prepData.py
+  mfr_featureSelection.py
+  mfr_findModel.py
+  mfr_prediction.py 
+<li>
 
-ad 2.  
+### ad 2.  
 To run mfr_featureSelection.py, the following input parameters need to be specified:  
   
 The first three arguments need to be file names to save features into (at first run of the script) or from which the features are read in (subsequent runs of the script - see below at --features)  
@@ -32,7 +33,7 @@ The train and test data sets are also saved in this subdirectory.
 The corresponding plots are saved in a subdirectory plots.   
 Both directories need to be created manually at the moment.  
 
-ad 3.  
+### ad 3.  
 To run mfr_findModel.py, two input parameters need to be specified:  
 
 The first one is the pickle-file with the train and test data:  
@@ -42,7 +43,7 @@ print('Save final model to:', argv[1])
 
 Both files need again the subdirectory mfr_predict.  
 
-ad 4.  
+### ad 4.  
 To run mfr_prediction.py, five input parameters need to be specified:  
 
 First, again the pickle-file with train and test data.  
