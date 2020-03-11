@@ -7,11 +7,11 @@ learning model.
 
 Analyses HELCATS ICMECAT for predicting labels of CME MFRs
 Authors: C. Moestl, U.V. Amerstorfer, Space Research Institute IWF Graz, Austria
-Last update: October 2019
+Last update: March 2020
 
 """
 import scipy.io
-import sunpy.time
+from sunpy.time import parse_time
 import numpy as np
 import matplotlib.dates as mdates
 import time
@@ -37,56 +37,12 @@ def decode_array(bytearrin):
     make list of python lists with arbitrary length
     '''
     bytearrout = ['' for x in range(len(bytearrin))]
-    for i in range(0, len(bytearrin) - 1):
+    for i in range(0, len(bytearrin)):
         bytearrout[i] = bytearrin[i].decode()
     # has to be np array so to be used with numpy "where"
     bytearrout = np.array(bytearrout)
     return bytearrout
 
-
-def time_to_num_cat(time_in):
-    '''
-    for time conversion from catalogue .sav to numerical time
-    # this for 1-minute data or lower time resolution
-
-    # for all catalogues
-    # time_in is the time in format: 2007-11-17T07:20:00 or 2007-11-17T07:20Z
-    # for times help see:
-    # http://docs.sunpy.org/en/latest/guide/time.html
-    # http://matplotlib.org/examples/pylab_examples/date_demo2.html
-    '''
-
-    j = 0
-    # time_str=np.empty(np.size(time_in),dtype='S19')
-    time_str = ['' for x in range(len(time_in))]
-    # =np.chararray(np.size(time_in),itemsize=19)
-    time_num = np.zeros(np.size(time_in))
-
-    for i in time_in:
-
-        # convert from bytes (output of scipy.readsav) to string
-        time_str[j] = time_in[j][0:16].decode() + ':00'
-        year = int(time_str[j][0:4])
-        time_str[j]
-        # convert time to sunpy friendly time and to matplotlibdatetime
-        # only for valid times so 9999 in year is not converted
-        # pdb.set_trace()
-        if year < 2100:
-            time_num[j] = mdates.date2num(sunpy.time.parse_time(time_str[j]))
-        j = j + 1
-        # the date format in matplotlib is e.g. 735202.67569444
-        # this is time in days since 0001-01-01 UTC, plus 1.
-
-    # return time_num which is already an array and convert the list of strings to an array
-    return time_num, np.array(time_str)
-
-
-def IDL_time_to_num(time_in):
-    # convert IDL time to matplotlib datetime
-    time_num = np.zeros(np.size(time_in))
-    for ii in np.arange(0, np.size(time_in)):
-        time_num[ii] = mdates.date2num(sunpy.time.parse_time(time_in[ii]))
-    return time_num
 
 
 #####################################################################################
@@ -101,7 +57,7 @@ Rs_in_AU = 7e5 / 149.5e6
 if not os.path.isdir('mfr_predict'):
     os.mkdir('mfr_predict')
 
-filename_icmecat = 'data/HELCATS_ICMECAT_v20_SCEQ.sav'
+filename_icmecat = 'data/HELCATS_ICMECAT_v10_SCEQ.sav'
 i = getcat(filename_icmecat)
 
 # now this is a scipy structured array
@@ -113,7 +69,9 @@ i = getcat(filename_icmecat)
 
 # get spacecraft and planet positions
 pos = getcat('data/positions_2007_2023_HEEQ_6hours.sav')
-pos_time_num = time_to_num_cat(pos.time)[0]
+
+pos_time= decode_array(pos.time[0:-1]) 
+pos_time_num=parse_time(pos_time[0:-1]).plot_date          
 
 # ----------------- get all parameters from ICMECAT for easier handling
 
@@ -128,17 +86,20 @@ isc = decode_array(isc)
 
 # all times need to be converted from the IDL format to matplotlib format
 icme_start_time = i.icmecat['ICME_START_TIME']
-[icme_start_time_num, icme_start_time_str] = time_to_num_cat(icme_start_time)
+icme_start_time_num = parse_time(decode_array(icme_start_time)).plot_date
 
 mo_start_time = i.icmecat['MO_START_TIME']
-[mo_start_time_num, mo_start_time_str] = time_to_num_cat(mo_start_time)
+mo_start_time_num = parse_time(decode_array(mo_start_time)).plot_date
 
 mo_end_time = i.icmecat['MO_END_TIME']
-[mo_end_time_num, mo_end_time_str] = time_to_num_cat(mo_end_time)
+mo_end_time_num = parse_time(decode_array(mo_end_time)).plot_date
 
-# this time exists only for Wind
+# this time exists only for Wind, so set all other times to nan
 icme_end_time = i.icmecat['ICME_END_TIME']
-[icme_end_time_num, icme_end_time_str] = time_to_num_cat(icme_end_time)
+iwinind = np.where(isc == 'Wind')[0]
+icme_end_time_dum=decode_array(icme_end_time)
+icme_end_time_num=np.zeros(len(isc))*np.nan
+icme_end_time_num[0:len(iwinind)] = parse_time(icme_end_time_dum[iwinind]).plot_date
 
 sc_heliodistance = i.icmecat['SC_HELIODISTANCE']
 sc_long_heeq = i.icmecat['SC_LONG_HEEQ']
@@ -164,10 +125,10 @@ sheath_temperature = i.icmecat['SHEATH_TEMPERATURE']
 sheath_temperature_std = i.icmecat['SHEATH_TEMPERATURE_STD']
 mo_temperature = i.icmecat['MO_TEMPERATURE']
 mo_temperature_std = i.icmecat['MO_TEMPERATURE_STD']
-sheath_pdyn = i.icmecat['SHEATH_PDYN']
-sheath_pdyn_std = i.icmecat['SHEATH_PDYN_STD']
-mo_pdyn = i.icmecat['MO_PDYN']
-mo_pdyn_std = i.icmecat['MO_PDYN_STD']
+#sheath_pdyn = i.icmecat['SHEATH_PDYN']
+#sheath_pdyn_std = i.icmecat['SHEATH_PDYN_STD']
+#mo_pdyn = i.icmecat['MO_PDYN']
+#mo_pdyn_std = i.icmecat['MO_PDYN_STD']
 
 # get indices of events by different spacecraft
 ivexind = np.where(isc == 'VEX')[0]
@@ -179,18 +140,18 @@ iulyind = np.where(isc == 'ULYSSES')[0]
 imavind = np.where(isc == 'MAVEN')[0]
 
 # take MESSENGER only at Mercury, only events after orbit insertion
-imercind = np.where(np.logical_and(isc == 'MESSENGER', icme_start_time_num > mdates.date2num(sunpy.time.parse_time('2011-03-18'))))
+imercind = np.where(np.logical_and(isc == 'MESSENGER', icme_start_time_num > parse_time('2011-03-18').plot_date))
 
 # limits of solar minimum, rising phase and solar maximum
 
-minstart = mdates.date2num(sunpy.time.parse_time('2007-01-01'))
-minend = mdates.date2num(sunpy.time.parse_time('2009-12-31'))
+minstart = parse_time('2007-01-01').plot_date
+minend =   parse_time('2009-12-31').plot_date
 
-risestart = mdates.date2num(sunpy.time.parse_time('2010-01-01'))
-riseend = mdates.date2num(sunpy.time.parse_time('2011-06-30'))
+risestart = parse_time('2010-01-01').plot_date
+riseend =   parse_time('2011-06-30').plot_date
 
-maxstart = mdates.date2num(sunpy.time.parse_time('2011-07-01'))
-maxend = mdates.date2num(sunpy.time.parse_time('2014-12-31'))
+maxstart =  parse_time('2011-07-01').plot_date
+maxend =    parse_time('2014-12-31').plot_date
 
 # extract events by limits of solar min, rising, max, too few events for MAVEN and Ulysses
 
@@ -219,20 +180,20 @@ istbind_rise = iallind_rise[np.where(isc[iallind_rise] == 'STEREO-B')[0]]
 istbind_max = iallind_max[np.where(isc[iallind_max] == 'STEREO-B')[0]]
 
 # select the events at Mercury extra after orbit insertion, no events for solar minimum!
-imercind_min = iallind_min[np.where(np.logical_and(isc[iallind_min] == 'MESSENGER', icme_start_time_num[iallind_min] > mdates.date2num(sunpy.time.parse_time('2011-03-18'))))]
-imercind_rise = iallind_rise[np.where(np.logical_and(isc[iallind_rise] == 'MESSENGER', icme_start_time_num[iallind_rise] > mdates.date2num(sunpy.time.parse_time('2011-03-18'))))]
-imercind_max = iallind_max[np.where(np.logical_and(isc[iallind_max] == 'MESSENGER', icme_start_time_num[iallind_max] > mdates.date2num(sunpy.time.parse_time('2011-03-18'))))]
+imercind_min = iallind_min[np.where(np.logical_and(isc[iallind_min] == 'MESSENGER', icme_start_time_num[iallind_min] >     parse_time('2011-03-18').plot_date))]
+imercind_rise = iallind_rise[np.where(np.logical_and(isc[iallind_rise] == 'MESSENGER', icme_start_time_num[iallind_rise] > parse_time('2011-03-18').plot_date))]
+imercind_max = iallind_max[np.where(np.logical_and(isc[iallind_max] == 'MESSENGER', icme_start_time_num[iallind_max] >     parse_time('2011-03-18').plot_date))]
 
 ################################ save MFR duration  #############################
 print('save MFR duration')
-pickle.dump([mo_duration], open("../catpy/DATACAT/icme_mo_duration.p", "wb"))
+pickle.dump([mo_duration], open("data/icme_mo_duration.p", "wb"))
 print('save MFR duration done')
 # ############################## save ICME times #############################
 
 print('save ICME times')
 # save ICME times and indices of spacecraft events
-pickle.dump([icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind], open("../catpy/DATACAT/icme_times.p", "wb"))
-pickle.dump([icme_start_time, icme_end_time, mo_start_time, mo_end_time], open("../catpy/DATACAT/icme_times_string.p", "wb"))
+pickle.dump([icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind], open("data/icme_times.p", "wb"))
+pickle.dump([icme_start_time, icme_end_time, mo_start_time, mo_end_time], open("data/data_icme_times_string.p", "wb"))
 print('save ICME times done')
 
 # ############################# save spacecraft data ################################
@@ -243,25 +204,25 @@ print('save ICME times done')
 
 print('save Wind data')
 # save insitu data
-win = pickle.load(open("../catpy/DATACAT/WIND_2007to2018_HEEQ.p", "rb"))
-win_time = IDL_time_to_num(win.time)
-pickle.dump([win_time], open("../catpy/DATACAT/insitu_times_mdates_win_2007_2018.p", "wb"))
+win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
+win_time = parse_time(win.time,format='utime').datetime
+pickle.dump([win_time], open("data/insitu_times_mdates_win_2007_2018.p", "wb"))
 print('save data done')
 
 # ############################# save Stereo-A data ################################
 
 print('save Stereo-A data')
 # save insitu data
-sta = pickle.load(open("../catpy/DATACAT/STA_2007to2015_SCEQ.p", "rb"))
-sta_time = IDL_time_to_num(sta.time)
-pickle.dump([sta_time], open("../catpy/DATACAT/insitu_times_mdates_sta_2007_2015.p", "wb"))
+sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
+sta_time = parse_time(sta.time,format='utime').datetime
+pickle.dump([sta_time], open("data/insitu_times_mdates_sta_2007_2015.p", "wb"))
 print('save data done')
 
 # ############################# save Stereo-B data ################################
 
 print('save Stereo-B data')
 # save insitu data
-stb = pickle.load(open("../catpy/DATACAT/STB_2007to2014_SCEQ.p", "rb"))
-stb_time = IDL_time_to_num(stb.time)
-pickle.dump([stb_time], open("../catpy/DATACAT/insitu_times_mdates_stb_2007_2014.p", "wb"))
+stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
+stb_time = parse_time(stb.time,format='utime').datetime
+pickle.dump([stb_time], open("data/insitu_times_mdates_stb_2007_2014.p", "wb"))
 print('save data done')
