@@ -63,7 +63,7 @@ Please run the scripts in the following order, make sure you have the conda heli
     mfr_prediction.py 
 
 
-#### mfr_prepData.py
+### mfr_prepData.py
 
 Start with 
 
@@ -71,7 +71,7 @@ Start with
     
 to prepare the data.
 
-#### mfr_featureSelection.py
+### mfr_featureSelection.py
 
 Continue with
 
@@ -99,7 +99,7 @@ The corresponding plots are saved in a subdirectory
     plots/
 
 
-#### mfr_findModel.py
+### mfr_findModel.py
 To run mfr_findModel.py, two input parameters need to be specified:  
 <ul>
 <li> The first one is the pickle-file with the train and test data:  
@@ -110,7 +110,7 @@ print('Save final model to:', argv[1])
 
 Both files need again the subdirectory mfr_predict.  
 
-#### mfr_prediction.py
+### mfr_prediction.py
 To run mfr_prediction.py, five input parameters need to be specified:  
 <ul>
 <li> First, again the pickle-file with train and test data.  
