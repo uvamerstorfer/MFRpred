@@ -119,3 +119,7 @@ To run mfr_prediction.py, five input parameters need to be specified,e.g.:
 4. File where plots from analysis of STA data will be saved to (as .png).  
 5. File where plots from analysis of STB data will be saved to (as .png).  
 
+
+All scripts can be also by run directly with the arguments as shown above by 
+    sh run_all_scripts.sh
+
