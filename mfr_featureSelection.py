@@ -5,15 +5,13 @@
 Prediction of flux rope magnetic fields
 
 Analyses HELCATS ICMECAT for predicting labels of CME MFRs
-Authors: U.V. Amerstorfer, Space Research Institute IWF Graz, Austria
-Last update: Nov 2019
+Authors: U.V. Amerstorfer, C. Moestl, Space Research Institute IWF Graz, Austria
+Last update: April 2020
 
 How to predict the rest of the MFR if first 10, 20, 30, 40, 50% are seen?
 Everything should be automatically with a deep learning method or ML fit methods
 
 """
-import sys
-
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import cm
@@ -26,6 +24,9 @@ import pickle
 import seaborn as sns
 import pandas as pd
 import os
+import sys
+from sunpy.time import parse_time
+
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
@@ -52,12 +53,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-
-
-
 #get all variables from the input.py file:
 
-from input import *
+from input import feature_hours
 
 #make new directory if it not exists
 mfrdir='mfr_predict'
@@ -65,7 +63,6 @@ if os.path.isdir(mfrdir) == False: os.mkdir(mfrdir)
 
 plotdir='plots'
 if os.path.isdir(plotdir) == False: os.mkdir(plotdir)
-
 
 
 
@@ -99,6 +96,7 @@ if "--mfr" in argv:
     mfr = True
     print("only mfr features")
 
+    
 # ####################### functions ###############################################
 
 
@@ -177,58 +175,102 @@ def get_label(sc_time, start_time, end_time, sc_ind, sc_label, feature_hours, *V
     elif (not np.any(label_mean)) and np.any(label_max):
         # print('only mean')
         return label_max
+    
+  
+    
+    
+    
 #####################################################################################
 # ####################### main program ###############################################
 #####################################################################################
 
-# ############################# get spacecraft data ################################
-# we use the HELCAT files only to get the times and indices of the events
-# then we use other data files to get the spacecraft data
+       
+# ------------------------ READ ICMECAT    
+
+filename_icmecat = 'data/HELCATS_ICMECAT_v20_pandas.p'
+[ic,header,parameters] = pickle.load(open(filename_icmecat, "rb" ))
+
+print()
+print()
+print('load icmecat')
+
+#ic is the pandas dataframe with the ICMECAT
+#print(ic.keys())
 
 
-# get ICME times
-print('get ICME times')
-[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("data/icme_times.p", "rb"))
-print('get ICME times done')
 
-# ############################# get Wind data ################################
+# ------------------------ get all parameters from ICMECAT for easier handling
+# id for each event
+iid = ic.loc[:,'icmecat_id']
 
-print('read Wind data')
-# get insitu date
-win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
-[win_time] = pickle.load(open("data/insitu_times_mdates_win_2007_2018.p", "rb"))
-print('read data done')
+# observing spacecraft
+isc = ic.loc[:,'sc_insitu'] 
 
-# ############################# get Stereo-A data ################################
+icme_start_time = ic.loc[:,'icme_start_time']
+icme_start_time_num = parse_time(icme_start_time).plot_date
 
-print('read Stereo-A data')
-# get insitu data
-sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
-[sta_time] = pickle.load(open("data/insitu_times_mdates_sta_2007_2015.p", "rb"))
-print('read data done')
+mo_start_time = ic.loc[:,'mo_start_time']
+mo_start_time_num = parse_time(mo_start_time).plot_date
 
-# ############################# get Stereo-B data ################################
+mo_end_time = ic.loc[:,'mo_end_time']
+mo_end_time_num = parse_time(mo_end_time).plot_date
 
-print('read Stereo-B data')
-# get insitu data
-stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
-[stb_time] = pickle.load(open("data/insitu_times_mdates_stb_2007_2014.p", "rb"))
-print('read data done')
+sc_heliodistance = ic.loc[:,'mo_sc_heliodistance']
+sc_long_heeq = ic.loc[:,'mo_sc_long_heeq']
+sc_lat_heeq = ic.loc[:,'mo_sc_long_heeq']
+mo_bmax = ic.loc[:,'mo_bmax']
+mo_bmean = ic.loc[:,'mo_bmean']
+mo_bstd = ic.loc[:,'mo_bstd']
+
+mo_duration = ic.loc[:,'mo_duration']
+
+
+# get indices of events by different spacecraft
+istaind = np.where(isc == 'STEREO-A')[0]
+istbind = np.where(isc == 'STEREO-B')[0]
+iwinind = np.where(isc == 'Wind')[0]
+
+
+
+# ############################# load spacecraft data ################################
+
+
+print('load Wind data')
+[win,winheader] = pickle.load(open("data/wind_2007_2019_heeq_ndarray.p", "rb"))
+
+print('load STEREO-A data')
+[sta,att, staheader] = pickle.load(open("data/stereoa_2007_2019_sceq_ndarray.p", "rb"))
+
+print('load STEREO-B data')
+[stb,att, stbheader] = pickle.load(open("data/stereob_2007_2014_sceq_ndarray.p", "rb"))
+
+
+print()
+
+
+
+#############################################################################
+
+
+
+
+
+
 
 #############################################################################
 
 # Version (1.1)  - prediction of scalar labels with a linear model, start with Btot
 
 # ################################# spacecraft #####################################
-# wind data: win_time win.bx win.by ... win.vtot win.vy etc.
+# wind data: win.time win['bx'] win['by'] ... win['vt'] win.vy etc.
 # sheath time: icme_start_time_num[iwinind] mo_start_time[iwinind]
 # mfr time: mo_start_time[iwinind]  mo_end_time[iwinind]
 
-# Stereo-A data: sta_time sta.bx sta.by ... sta.vtot sta.vy etc.
+# Stereo-A data: sta.time sta['bx'] sta.by ... sta['vt'] sta.vy etc.
 # sheath time: icme_start_time_num[istaind] mo_start_time[istaind]
 # mfr time: mo_start_time[istaind]  mo_end_time[istaind]
 
-# Stereo-B data: stb_time stb.bx stb.by ... stb.vtot stb.vy etc.
+# Stereo-B data: stb.time stb['bx'] stb['by'] ... stb['vt'] stb.vy etc.
 # sheath time: icme_start_time_num[istbind] mo_start_time[istbind]
 # mfr time: mo_start_time[istbind]  mo_end_time[istbind]
 
@@ -246,23 +288,23 @@ if features:
     # syntax: get_features(spacecraft time, start time of intervall for values, end time of intervall for values, event index of spacecraft, value to be extracted, "mean", "std", "max")
 
     ################################ WIND #############################
-    feature_bzmean, feature_bzstd = get_feature(win_time, icme_start_time_num, mo_start_time_num, n_iwinind, win.bz, feature_hours, "mean", "std")
-    feature_bymean, feature_bystd = get_feature(win_time, icme_start_time_num, mo_start_time_num, n_iwinind, win.by, feature_hours, "mean", "std")
-    feature_bxmean, feature_bxstd = get_feature(win_time, icme_start_time_num, mo_start_time_num, n_iwinind, win.bx, feature_hours, "mean", "std")
-    feature_btotmean, feature_btotstd = get_feature(win_time, icme_start_time_num, mo_start_time_num, n_iwinind, win.btot, feature_hours, "mean", "std")
-    feature_btotmean, feature_btotmax, feature_btotstd = get_feature(win_time, icme_start_time_num, mo_start_time_num, n_iwinind, win.btot, feature_hours, "mean", "max", "std")
-    feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(win_time, icme_start_time_num, mo_start_time_num, n_iwinind, win.vtot, feature_hours, "mean", "std", "max")
+    feature_bzmean, feature_bzstd = get_feature(win['time'], icme_start_time_num, mo_start_time_num, n_iwinind, win['bz'], feature_hours, "mean", "std")
+    feature_bymean, feature_bystd = get_feature(win['time'], icme_start_time_num, mo_start_time_num, n_iwinind, win['by'], feature_hours, "mean", "std")
+    feature_bxmean, feature_bxstd = get_feature(win['time'], icme_start_time_num, mo_start_time_num, n_iwinind, win['bx'], feature_hours, "mean", "std")
+    feature_btotmean, feature_btotstd = get_feature(win['time'], icme_start_time_num, mo_start_time_num, n_iwinind, win['bt'], feature_hours, "mean", "std")
+    feature_btotmean, feature_btotmax, feature_btotstd = get_feature(win['time'], icme_start_time_num, mo_start_time_num, n_iwinind, win['bt'], feature_hours, "mean", "max", "std")
+    feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(win['time'], icme_start_time_num, mo_start_time_num, n_iwinind, win['vt'], feature_hours, "mean", "std", "max")
 
     if mfr:
-        feature_bzmean, feature_bzstd = get_feature(win_time, mo_start_time_num, mo_start_time_num, n_iwinind, win.bz, feature_hours, "mean", "std")
-        feature_bymean, feature_bystd = get_feature(win_time, mo_start_time_num, mo_start_time_num, n_iwinind, win.by, feature_hours, "mean", "std")
-        feature_bxmean, feature_bxstd = get_feature(win_time, mo_start_time_num, mo_start_time_num, n_iwinind, win.bx, feature_hours, "mean", "std")
-        feature_btotmean, feature_btotstd = get_feature(win_time, mo_start_time_num, mo_start_time_num, n_iwinind, win.btot, feature_hours, "mean", "std")
-        feature_btotmean, feature_btotmax, feature_btotstd = get_feature(win_time, mo_start_time_num, mo_start_time_num, n_iwinind, win.btot, feature_hours, "mean", "max", "std")
-        feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(win_time, mo_start_time_num, mo_start_time_num, n_iwinind, win.vtot, feature_hours, "mean", "std", "max")
+        feature_bzmean, feature_bzstd = get_feature(win['time'], mo_start_time_num, mo_start_time_num, n_iwinind, win['bz'], feature_hours, "mean", "std")
+        feature_bymean, feature_bystd = get_feature(win['time'], mo_start_time_num, mo_start_time_num, n_iwinind, win['by'], feature_hours, "mean", "std")
+        feature_bxmean, feature_bxstd = get_feature(win['time'], mo_start_time_num, mo_start_time_num, n_iwinind, win['bx'], feature_hours, "mean", "std")
+        feature_btotmean, feature_btotstd = get_feature(win['time'], mo_start_time_num, mo_start_time_num, n_iwinind, win['bt'], feature_hours, "mean", "std")
+        feature_btotmean, feature_btotmax, feature_btotstd = get_feature(win['time'], mo_start_time_num, mo_start_time_num, n_iwinind, win['bt'], feature_hours, "mean", "max", "std")
+        feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(win['time'], mo_start_time_num, mo_start_time_num, n_iwinind, win['vt'], feature_hours, "mean", "std", "max")
     # ------------------
     # label
-    label_btotmean = get_label(win_time, mo_start_time_num, mo_end_time_num, n_iwinind, win.btot, feature_hours, "mean")
+    label_btotmean = get_label(win['time'], mo_start_time_num, mo_end_time_num, n_iwinind, win['bt'], feature_hours, "mean")
 
     # ------------------
 
@@ -272,24 +314,24 @@ if features:
     pickle.dump(dfwin, open("mfr_predict/" + argv[0], "wb"))
 
     ################################ STEREO-A #############################
-    feature_bzmean, feature_bzstd = get_feature(sta_time, icme_start_time_num, mo_start_time_num, n_istaind, sta.bz, feature_hours, "mean", "std")
-    feature_bymean, feature_bystd = get_feature(sta_time, icme_start_time_num, mo_start_time_num, n_istaind, sta.by, feature_hours, "mean", "std")
-    feature_bxmean, feature_bxstd = get_feature(sta_time, icme_start_time_num, mo_start_time_num, n_istaind, sta.bx, feature_hours, "mean", "std")
-    feature_btotmean, feature_btotstd = get_feature(sta_time, icme_start_time_num, mo_start_time_num, n_istaind, sta.btot, feature_hours, "mean", "std")
-    feature_btotmean, feature_btotmax, feature_btotstd = get_feature(sta_time, icme_start_time_num, mo_start_time_num, n_istaind, sta.btot, feature_hours, "mean", "max", "std")
-    feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(sta_time, icme_start_time_num, mo_start_time_num, n_istaind, sta.vtot, feature_hours, "mean", "std", "max")
+    feature_bzmean, feature_bzstd = get_feature(sta['time'], icme_start_time_num, mo_start_time_num, n_istaind, sta['bz'], feature_hours, "mean", "std")
+    feature_bymean, feature_bystd = get_feature(sta['time'], icme_start_time_num, mo_start_time_num, n_istaind, sta['by'], feature_hours, "mean", "std")
+    feature_bxmean, feature_bxstd = get_feature(sta['time'], icme_start_time_num, mo_start_time_num, n_istaind, sta['bx'], feature_hours, "mean", "std")
+    feature_btotmean, feature_btotstd = get_feature(sta['time'], icme_start_time_num, mo_start_time_num, n_istaind, sta['bt'], feature_hours, "mean", "std")
+    feature_btotmean, feature_btotmax, feature_btotstd = get_feature(sta['time'], icme_start_time_num, mo_start_time_num, n_istaind, sta['bt'], feature_hours, "mean", "max", "std")
+    feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(sta['time'], icme_start_time_num, mo_start_time_num, n_istaind, sta['vt'], feature_hours, "mean", "std", "max")
 
     if mfr:
-        feature_bzmean, feature_bzstd = get_feature(sta_time, mo_start_time_num, mo_start_time_num, n_istaind, sta.bz, feature_hours, "mean", "std")
-        feature_bymean, feature_bystd = get_feature(sta_time, mo_start_time_num, mo_start_time_num, n_istaind, sta.by, feature_hours, "mean", "std")
-        feature_bxmean, feature_bxstd = get_feature(sta_time, mo_start_time_num, mo_start_time_num, n_istaind, sta.bx, feature_hours, "mean", "std")
-        feature_btotmean, feature_btotstd = get_feature(sta_time, mo_start_time_num, mo_start_time_num, n_istaind, sta.btot, feature_hours, "mean", "std")
-        feature_btotmean, feature_btotmax, feature_btotstd = get_feature(sta_time, mo_start_time_num, mo_start_time_num, n_istaind, sta.btot, feature_hours, "mean", "max", "std")
-        feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(sta_time, mo_start_time_num, mo_start_time_num, n_istaind, sta.vtot, feature_hours, "mean", "std", "max")
+        feature_bzmean, feature_bzstd = get_feature(sta['time'], mo_start_time_num, mo_start_time_num, n_istaind, sta['bz'], feature_hours, "mean", "std")
+        feature_bymean, feature_bystd = get_feature(sta['time'], mo_start_time_num, mo_start_time_num, n_istaind, sta['by'], feature_hours, "mean", "std")
+        feature_bxmean, feature_bxstd = get_feature(sta['time'], mo_start_time_num, mo_start_time_num, n_istaind, sta['bx'], feature_hours, "mean", "std")
+        feature_btotmean, feature_btotstd = get_feature(sta['time'], mo_start_time_num, mo_start_time_num, n_istaind, sta['bt'], feature_hours, "mean", "std")
+        feature_btotmean, feature_btotmax, feature_btotstd = get_feature(sta['time'], mo_start_time_num, mo_start_time_num, n_istaind, sta['bt'], feature_hours, "mean", "max", "std")
+        feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(sta['time'], mo_start_time_num, mo_start_time_num, n_istaind, sta['vt'], feature_hours, "mean", "std", "max")
     # ------------------
     # label
 
-    label_btotmean = get_label(sta_time, mo_start_time_num, mo_end_time_num, n_istaind, sta.btot, feature_hours, "mean")
+    label_btotmean = get_label(sta['time'], mo_start_time_num, mo_end_time_num, n_istaind, sta['bt'], feature_hours, "mean")
     # ------------------
 
     dsta = {'$<B_{tot}>$': feature_btotmean, 'btot_std': feature_btotstd, '$max(B_{tot})$': feature_btotmax, '$<B_{x}>$': feature_bxmean, 'bx_std': feature_bxstd, '$<B_{y}>$': feature_bymean, 'by_std': feature_bystd, '$<B_{z}>$': feature_bzmean, 'bz_std': feature_bzstd, '$<v_{tot}>$': feature_vtotmean, '$max(v_{tot})$': feature_vtotmax, 'vtot_std': feature_vtotstd, '<B> label': label_btotmean}
@@ -302,24 +344,24 @@ if features:
     print('saved features and label')
 
     ################################ STEREO-B #############################
-    feature_bzmean, feature_bzstd = get_feature(stb_time, icme_start_time_num, mo_start_time_num, n_istbind, stb.bz, feature_hours, "mean", "std")
-    feature_bymean, feature_bystd = get_feature(stb_time, icme_start_time_num, mo_start_time_num, n_istbind, stb.by, feature_hours, "mean", "std")
-    feature_bxmean, feature_bxstd = get_feature(stb_time, icme_start_time_num, mo_start_time_num, n_istbind, stb.bx, feature_hours, "mean", "std")
-    feature_btotmean, feature_btotstd = get_feature(stb_time, icme_start_time_num, mo_start_time_num, n_istbind, stb.btot, feature_hours, "mean", "std")
-    feature_btotmean, feature_btotmax, feature_btotstd = get_feature(stb_time, icme_start_time_num, mo_start_time_num, n_istbind, stb.btot, feature_hours, "mean", "max", "std")
-    feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(stb_time, icme_start_time_num, mo_start_time_num, n_istbind, stb.vtot, feature_hours, "mean", "std", "max")
+    feature_bzmean, feature_bzstd = get_feature(stb['time'], icme_start_time_num, mo_start_time_num, n_istbind, stb['bz'], feature_hours, "mean", "std")
+    feature_bymean, feature_bystd = get_feature(stb['time'], icme_start_time_num, mo_start_time_num, n_istbind, stb['by'], feature_hours, "mean", "std")
+    feature_bxmean, feature_bxstd = get_feature(stb['time'], icme_start_time_num, mo_start_time_num, n_istbind, stb['bx'], feature_hours, "mean", "std")
+    feature_btotmean, feature_btotstd = get_feature(stb['time'], icme_start_time_num, mo_start_time_num, n_istbind, stb['bt'], feature_hours, "mean", "std")
+    feature_btotmean, feature_btotmax, feature_btotstd = get_feature(stb['time'], icme_start_time_num, mo_start_time_num, n_istbind, stb['bt'], feature_hours, "mean", "max", "std")
+    feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(stb['time'], icme_start_time_num, mo_start_time_num, n_istbind, stb['vt'], feature_hours, "mean", "std", "max")
 
     if mfr:
-        feature_bzmean, feature_bzstd = get_feature(stb_time, mo_start_time_num, mo_start_time_num, n_istbind, stb.bz, feature_hours, "mean", "std")
-        feature_bymean, feature_bystd = get_feature(stb_time, mo_start_time_num, mo_start_time_num, n_istbind, stb.by, feature_hours, "mean", "std")
-        feature_bxmean, feature_bxstd = get_feature(stb_time, mo_start_time_num, mo_start_time_num, n_istbind, stb.bx, feature_hours, "mean", "std")
-        feature_btotmean, feature_btotstd = get_feature(stb_time, mo_start_time_num, mo_start_time_num, n_istbind, stb.btot, feature_hours, "mean", "std")
-        feature_btotmean, feature_btotmax, feature_btotstd = get_feature(stb_time, mo_start_time_num, mo_start_time_num, n_istbind, stb.btot, feature_hours, "mean", "max", "std")
-        feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(stb_time, mo_start_time_num, mo_start_time_num, n_istbind, stb.vtot, feature_hours, "mean", "std", "max")
+        feature_bzmean, feature_bzstd = get_feature(stb['time'], mo_start_time_num, mo_start_time_num, n_istbind, stb['bz'], feature_hours, "mean", "std")
+        feature_bymean, feature_bystd = get_feature(stb['time'], mo_start_time_num, mo_start_time_num, n_istbind, stb['by'], feature_hours, "mean", "std")
+        feature_bxmean, feature_bxstd = get_feature(stb['time'], mo_start_time_num, mo_start_time_num, n_istbind, stb['bx'], feature_hours, "mean", "std")
+        feature_btotmean, feature_btotstd = get_feature(stb['time'], mo_start_time_num, mo_start_time_num, n_istbind, stb['bt'], feature_hours, "mean", "std")
+        feature_btotmean, feature_btotmax, feature_btotstd = get_feature(stb['time'], mo_start_time_num, mo_start_time_num, n_istbind, stb['bt'], feature_hours, "mean", "max", "std")
+        feature_vtotmean, feature_vtotmax, feature_vtotstd = get_feature(stb['time'], mo_start_time_num, mo_start_time_num, n_istbind, stb['vt'], feature_hours, "mean", "std", "max")
     # ------------------
     # label
 
-    label_btotmean = get_label(stb_time, mo_start_time_num, mo_end_time_num, n_istbind, stb.btot, feature_hours, "mean")
+    label_btotmean = get_label(stb['time'], mo_start_time_num, mo_end_time_num, n_istbind, stb['bt'], feature_hours, "mean")
     # ------------------
 
     dstb = {'$<B_{tot}>$': feature_btotmean, 'btot_std': feature_btotstd, '$max(B_{tot})$': feature_btotmax, '$<B_{x}>$': feature_bxmean, 'bx_std': feature_bxstd, '$<B_{y}>$': feature_bymean, 'by_std': feature_bystd, '$<B_{z}>$': feature_bzmean, 'bz_std': feature_bzstd, '$<v_{tot}>$': feature_vtotmean, '$max(v_{tot})$': feature_vtotmax, 'vtot_std': feature_vtotstd, '<B> label': label_btotmean}

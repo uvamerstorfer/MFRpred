@@ -46,6 +46,9 @@ from sklearn.ensemble import RandomForestRegressor
 
 from pandas.plotting import scatter_matrix
 
+
+from sunpy.time import parse_time
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -110,39 +113,70 @@ def evaluate_forecast(model, X, y, y_predict):
 # ####################### main program ###############################################
 #####################################################################################
 
-# ############################# get spacecraft data ################################
-# we use the HELCAT files only to get the times of the events
-# then we use other data files to get the spacecraft data
+    
+# ------------------------ READ ICMECAT    
+
+filename_icmecat = 'data/HELCATS_ICMECAT_v20_pandas.p'
+[ic,header,parameters] = pickle.load(open(filename_icmecat, "rb" ))
+
+print()
+print()
+print('load icmecat')
+
+#ic is the pandas dataframe with the ICMECAT
+#print(ic.keys())
 
 
-# get ICME times
-print('get ICME times')
-[icme_start_time_num, icme_end_time_num, mo_start_time_num, mo_end_time_num, iwinind, istaind, istbind] = pickle.load(open("data/icme_times.p", "rb"))
-print('get ICME times done')
 
-# ############################# get Wind data ################################
+# ------------------------ get all parameters from ICMECAT for easier handling
+# id for each event
+iid = ic.loc[:,'icmecat_id']
 
-print('read Wind data')
-# get insitu date
-win = pickle.load(open("data/WIND_2007to2018_HEEQ.p", "rb"))
-[win_time] = pickle.load(open("data/insitu_times_mdates_win_2007_2018.p", "rb"))
-print('read data done')
+# observing spacecraft
+isc = ic.loc[:,'sc_insitu'] 
 
-# ############################# get Stereo-A data ################################
+icme_start_time = ic.loc[:,'icme_start_time']
+icme_start_time_num = parse_time(icme_start_time).plot_date
 
-print('read Stereo-A data')
-# get insitu data
-sta = pickle.load(open("data/STA_2007to2015_SCEQ.p", "rb"))
-[sta_time] = pickle.load(open("data/insitu_times_mdates_sta_2007_2015.p", "rb"))
-print('read data done')
+mo_start_time = ic.loc[:,'mo_start_time']
+mo_start_time_num = parse_time(mo_start_time).plot_date
 
-# ############################# get Stereo-B data ################################
+mo_end_time = ic.loc[:,'mo_end_time']
+mo_end_time_num = parse_time(mo_end_time).plot_date
 
-print('read Stereo-B data')
-# get insitu data
-stb = pickle.load(open("data/STB_2007to2014_SCEQ.p", "rb"))
-[stb_time] = pickle.load(open("data/insitu_times_mdates_stb_2007_2014.p", "rb"))
-print('read data done')
+sc_heliodistance = ic.loc[:,'mo_sc_heliodistance']
+sc_long_heeq = ic.loc[:,'mo_sc_long_heeq']
+sc_lat_heeq = ic.loc[:,'mo_sc_long_heeq']
+mo_bmax = ic.loc[:,'mo_bmax']
+mo_bmean = ic.loc[:,'mo_bmean']
+mo_bstd = ic.loc[:,'mo_bstd']
+
+mo_duration = ic.loc[:,'mo_duration']
+
+
+# get indices of events by different spacecraft
+istaind = np.where(isc == 'STEREO-A')[0]
+istbind = np.where(isc == 'STEREO-B')[0]
+iwinind = np.where(isc == 'Wind')[0]
+
+
+
+# ############################# load spacecraft data ################################
+
+
+print('load Wind data')
+[win,winheader] = pickle.load(open("data/wind_2007_2019_heeq_ndarray.p", "rb"))
+
+print('load STEREO-A data')
+[sta,att, staheader] = pickle.load(open("data/stereoa_2007_2019_sceq_ndarray.p", "rb"))
+
+print('load STEREO-B data')
+[stb,att, stbheader] = pickle.load(open("data/stereob_2007_2014_sceq_ndarray.p", "rb"))
+
+
+print()
+
+
 
 #############################################################################
 # =========================== READ TRAIN AND TEST DATA ===========================================

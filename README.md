@@ -1,79 +1,38 @@
 # MFRpred
 
-This python package is used for space weather research.  We try to predict the magnetic field of the magnetic flux rope (MFR) 
-within an interplanetary coronal mass ejection (ICME) at Earth (L1) with (1) machine learning algorithms, 
+This python package is used for space weather research.  We try to predict the magnetic field of the magnetic flux rope (MFR) within an interplanetary coronal mass ejection (ICME) at Earth (L1) with (1) machine learning algorithms, 
 and (2) an analogue ensemble method. 
 
 by U.V. Amerstorfer and [C. Möstl](https://www.iwf.oeaw.ac.at/en/user-site/christian-moestl/), IWF Graz, Austria.
 
-Current status (March 2020): **Work in progress!** 
+Current status (April 2020): **Work in progress!** 
 
 If you want to use parts of this code for generating results for peer-reviewed scientific publications, 
 please contact us per email (ute.amerstorfer@oeaw.ac.at, christian.moestl@oeaw.ac.at) or via https://twitter.com/chrisoutofspace .
 
 
-## Installation 
 
-Install python 3.7.6 with miniconda:
-
-on Linux:
-
-	  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-	  bash Miniconda3-latest-Linux-x86.sh
-
-on MacOS:
-
-	  curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-	  bash Miniconda3-latest-MacOSX-x86_64.sh
-
-Create a conda environment:
-
-	  conda env create -f environment.yml
-
-	  conda activate helio
-
-	  pip install -r requirements.txt
-	  
-go to a directory of your choice
-
-	  git clone https://github.com/uvamerstorfer/MFRpred
-
-
-Before running the scripts, you need to download three data files (in total 1.5 GB) from this figshare repository, 
-
-    https://doi.org/10.6084/m9.figshare.11841156.v1
-
-and place them in the data/ folder.
-
-    data/STA_2007to2015_SCEQ.p
-    data/STB_2007to2014_SCEQ.p
-    data/WIND_2007to2018_HEEQ.p 
-    
-    
-     
+** TO DO **
+- in mfr_prediction.py, icme_end_time_num has been replaced by mo_end_time_num (no icme_end_time exists in ICMECATv2.0)
+- move to Jupyter notebook
+  
+For installation instructions, see the bottom of this document.  
   
 ## 1. Machine learning  
+
 ### Brief instruction for running the scripts  
 
 Please run the scripts in the following order, make sure you have the conda helio environment activated:
 
-    mfr_prepData.py
     mfr_featureSelection.py 
     mfr_findModel.py 
     mfr_prediction.py 
 
 
-### mfr_prepData.py
-
-Start with 
-
-    python mfr_prepData.py
-    
-to prepare the data.
 
 ### mfr_featureSelection.py
 
-Continue with
+Run
 
     python mfr_featureSelection.py wind_features.p sta_features.p stb_features.p --features
  
@@ -120,7 +79,48 @@ To run mfr_prediction.py, five input parameters need to be specified,e.g.:
 5. File where plots from analysis of STB data will be saved to (as .png).  
 
 
-All scripts can be also by run directly with the arguments as shown above by 
 
-    sh run_all_scripts.sh
 
+## Installation 
+
+Install python 3.7.6 with miniconda:
+
+on Linux:
+
+	  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+	  bash Miniconda3-latest-Linux-x86.sh
+
+on MacOS:
+
+	  curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+	  bash Miniconda3-latest-MacOSX-x86_64.sh
+
+go to a directory of your choice
+
+	  git clone https://github.com/uvamerstorfer/MFRpred
+
+Create a conda environment:
+
+	  conda env create -f environment.yml
+
+	  conda activate helio
+
+	  pip install -r requirements.txt
+	  
+
+
+Before running the scripts, you need to download three data files (in total 1.8 GB) from this figshare repository, 
+
+    https://doi.org/10.6084/m9.figshare.12058065.v7
+
+and place them in the data/ folder.
+
+    data/stereoa_2007_2019_sceq_ndarray.p
+    data/stereob_2007_2014_sceq_ndarray.p
+    data/wind_2007_2019_heeq_ndarray.p
+        
+
+
+A catalog for interplanetary coronal mass ejections (HELCATS ICMECAT v2.0) is included in this repo, for updates see:
+
+    https://helioforecast.space/icmeca
