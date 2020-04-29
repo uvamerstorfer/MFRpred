@@ -123,4 +123,4 @@ and place them in the data/ folder.
 
 A catalog for interplanetary coronal mass ejections (HELCATS ICMECAT v2.0) is included in this repo, for updates see:
 
-    https://helioforecast.space/icmeca
+    https://helioforecast.space/icmecat
