@@ -80,6 +80,19 @@ To run mfr_prediction.py, five input parameters need to be specified,e.g.:
 
 
 
+### mfr_prediction.py
+To run mfr_prediction.py, five input parameters need to be specified,e.g.:  
+
+    python mfr_prediction.py train_test_data_fh=5.p model1.p wind_plot.png sta_plot.png stb_plot.png
+
+1. Again the pickle-file with train and test data from *mfr_featureSelection.py*.  
+2. The pickle-file with the final model from *mfr_findModel.py*.
+3. File where plots from analysis of WIND data will be saved to (as .png).  
+4. File where plots from analysis of STA data will be saved to (as .png).  
+5. File where plots from analysis of STB data will be saved to (as .png).  
+
+
+
 
 ## Installation 
 
